@@ -121,7 +121,7 @@ export default function SharedDocsContent() {
           "Content-Type": "application/json",
         },
         mode: "cors",
-        credentials: "omit",
+        credentials: "include",
       })
 
       console.log("Response status:", response.status)
