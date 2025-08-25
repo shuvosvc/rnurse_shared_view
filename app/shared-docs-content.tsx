@@ -1,19 +1,13 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import {
   Calendar,
   FileText,
@@ -26,69 +20,69 @@ import {
   AlertCircle,
   ExternalLink,
   Images,
-} from "lucide-react";
-import { format } from "date-fns";
+} from "lucide-react"
+import { format } from "date-fns"
 
 interface PrescriptionImage {
-  prescription_id: number;
-  prescription_img_id: number;
-  resiged: string;
-  thumb: string;
+  prescription_id: number
+  prescription_img_id: number
+  resiged: string
+  thumb: string
 }
 
 interface ReportImage {
-  report_id: number;
-  report_img_id: number;
-  resiged: string;
-  thumb: string;
+  report_id: number
+  report_img_id: number
+  resiged: string
+  thumb: string
 }
 
 interface Report {
-  id: number;
-  title: string | null;
-  test_name: string;
-  delivery_date: string;
-  prescription_id?: number;
-  created_at: string;
-  images: ReportImage[];
+  id: number
+  title: string | null
+  test_name: string
+  delivery_date: string
+  prescription_id?: number
+  created_at: string
+  images: ReportImage[]
 }
 
 interface Prescription {
-  id: number;
-  title: string | null;
-  department: string;
-  doctor_name: string;
-  visited_date: string;
-  created_at: string;
-  images: PrescriptionImage[];
-  reports: Report[];
+  id: number
+  title: string | null
+  department: string
+  doctor_name: string
+  visited_date: string
+  created_at: string
+  images: PrescriptionImage[]
+  reports: Report[]
 }
 
 interface SharedDocsResponse {
-  flag: number;
-  accessToken: string;
-  prescriptions: Prescription[];
-  standaloneReports: Report[];
-  message: string;
+  flag: number
+  accessToken: string
+  prescriptions: Prescription[]
+  standaloneReports: Report[]
+  message: string
 }
 
 interface Filters {
-  title: string;
-  department: string;
-  testName: string;
-  doctorName: string;
-  dateFrom: string;
-  dateTo: string;
+  title: string
+  department: string
+  testName: string
+  doctorName: string
+  dateFrom: string
+  dateTo: string
 }
 
 export default function SharedDocsContent() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
 
-  const [data, setData] = useState<SharedDocsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [data, setData] = useState<SharedDocsResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const [filters, setFilters] = useState<Filters>({
     title: "",
     department: "",
@@ -96,47 +90,42 @@ export default function SharedDocsContent() {
     doctorName: "",
     dateFrom: "",
     dateTo: "",
-  });
-  const [showFilters, setShowFilters] = useState(false);
+  })
+  const [showFilters, setShowFilters] = useState(false)
 
   // Get API base URL from environment variable
-  const API_BASE_URL = "http://13.200.72.144";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
   useEffect(() => {
     if (token) {
-      fetchSharedDocs();
+      fetchSharedDocs()
     }
-  }, [token]);
+  }, [token])
 
   const fetchSharedDocs = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      setDebugInfo(null);
+      setLoading(true)
+      setError(null)
+      setDebugInfo(null)
 
       if (!token) {
-        throw new Error("No token provided in URL");
+        throw new Error("No token provided in URL")
       }
 
-      // const apiUrl = `${API_BASE_URL}/getSharedDocs?token=${encodeURIComponent(
-      //   token
-      // )}`;
-      const apiUrl = `/api/getSharedDocs?token=${encodeURIComponent(token)}`;
-
-      console.log("Making API call to:", apiUrl);
+      const apiUrl = `${API_BASE_URL}/getSharedDocs?token=${encodeURIComponent(token)}`
+      console.log("Making API call to:", apiUrl)
 
       const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-      });
+        mode: "cors",
+        credentials: "omit",
+      })
 
-      console.log("Response status:", response.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(response.headers.entries())
-      );
+      console.log("Response status:", response.status)
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()))
 
       // Store debug info
       setDebugInfo({
@@ -144,33 +133,31 @@ export default function SharedDocsContent() {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
-      });
+      })
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API Error Response:", errorText);
+        const errorText = await response.text()
+        console.error("API Error Response:", errorText)
 
         // Handle specific error cases
         if (response.status === 404) {
           throw new Error(
-            `Endpoint not found (404). The API endpoint '/getSharedDocs' might not be configured on your server.`
-          );
+            `Endpoint not found (404). The API endpoint '/getSharedDocs' might not be configured on your server.`,
+          )
         } else if (errorText.includes("Cannot GET")) {
           throw new Error(
-            `Route not found: ${errorText}. Check if your Express server has the '/getSharedDocs' route defined.`
-          );
+            `Route not found: ${errorText}. Check if your Express server has the '/getSharedDocs' route defined.`,
+          )
         } else {
-          throw new Error(
-            `HTTP ${response.status}: ${errorText || response.statusText}`
-          );
+          throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`)
         }
       }
 
-      const result: SharedDocsResponse = await response.json();
-      console.log("API Response:", result);
-      setData(result);
+      const result: SharedDocsResponse = await response.json()
+      console.log("API Response:", result)
+      setData(result)
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Fetch error:", err)
 
       // Enhanced error handling for CORS and network issues
       if (err instanceof TypeError && err.message.includes("Failed to fetch")) {
@@ -179,15 +166,15 @@ export default function SharedDocsContent() {
         
         Please ensure your backend server has CORS configured to allow requests from ${window.location.origin}.
         
-        Backend CORS should include: ${window.location.origin}`
-        );
+        Backend CORS should include: ${window.location.origin}`,
+        )
       } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : "An error occurred")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const clearFilters = () => {
     setFilters({
@@ -197,28 +184,26 @@ export default function SharedDocsContent() {
       doctorName: "",
       dateFrom: "",
       dateTo: "",
-    });
-  };
+    })
+  }
 
   // Function to handle authenticated image viewing
   const viewFullImage = async (imagePath: string, accessToken: string) => {
     try {
-      const imageUrl = imagePath.startsWith("/")
-        ? `${API_BASE_URL}${imagePath}`
-        : imagePath;
+      const imageUrl = imagePath.startsWith("/") ? `${API_BASE_URL}${imagePath}` : imagePath
 
       const response = await fetch(imageUrl, {
         headers: {
           Authorization: accessToken,
         },
-      });
+      })
 
       if (response.ok) {
-        const blob = await response.blob();
-        const imageObjectUrl = URL.createObjectURL(blob);
+        const blob = await response.blob()
+        const imageObjectUrl = URL.createObjectURL(blob)
 
         // Open in new window
-        const newWindow = window.open();
+        const newWindow = window.open()
         if (newWindow) {
           newWindow.document.write(`
             <html>
@@ -248,62 +233,56 @@ export default function SharedDocsContent() {
                 <img src="${imageObjectUrl}" alt="Medical Document" />
               </body>
             </html>
-          `);
+          `)
 
           // Clean up the blob URL after a delay
           setTimeout(() => {
-            URL.revokeObjectURL(imageObjectUrl);
-          }, 10000);
+            URL.revokeObjectURL(imageObjectUrl)
+          }, 10000)
         }
       } else {
-        alert("Failed to load image. Please check your access permissions.");
+        alert("Failed to load image. Please check your access permissions.")
       }
     } catch (error) {
-      console.error("Error viewing image:", error);
-      alert("Error loading image. Please try again.");
+      console.error("Error viewing image:", error)
+      alert("Error loading image. Please try again.")
     }
-  };
+  }
 
   // Function to view all images in a gallery
-  const viewAllImages = async (
-    images: (PrescriptionImage | ReportImage)[],
-    accessToken: string,
-    title: string
-  ) => {
+  const viewAllImages = async (images: (PrescriptionImage | ReportImage)[], accessToken: string, title: string) => {
     try {
       const imageBlobs = await Promise.all(
         images.map(async (image) => {
-          const imagePath = "resiged" in image ? image.resiged : image.resiged;
-          const imageUrl = imagePath.startsWith("/")
-            ? `${API_BASE_URL}${imagePath}`
-            : imagePath;
+          const imagePath = "resiged" in image ? image.resiged : image.resiged
+          const imageUrl = imagePath.startsWith("/") ? `${API_BASE_URL}${imagePath}` : imagePath
 
           const response = await fetch(imageUrl, {
             headers: {
               Authorization: accessToken,
             },
-          });
+          })
 
           if (response.ok) {
-            const blob = await response.blob();
+            const blob = await response.blob()
             return {
               url: URL.createObjectURL(blob),
               blob: blob,
-            };
+            }
           }
-          return null;
-        })
-      );
+          return null
+        }),
+      )
 
-      const validImages = imageBlobs.filter((item) => item !== null);
+      const validImages = imageBlobs.filter((item) => item !== null)
 
       if (validImages.length === 0) {
-        alert("No images could be loaded.");
-        return;
+        alert("No images could be loaded.")
+        return
       }
 
       // Create gallery window
-      const newWindow = window.open("", "_blank", "width=900,height=800");
+      const newWindow = window.open("", "_blank", "width=900,height=800")
       if (newWindow) {
         newWindow.document.write(`
         <html>
@@ -483,9 +462,7 @@ export default function SharedDocsContent() {
           <body>
             <div class="header">
               <h2>${title}</h2>
-              <p>${
-                validImages.length
-              } image(s) - Click any image to view full size</p>
+              <p>${validImages.length} image(s) - Click any image to view full size</p>
               <div class="actions">
                 <button class="btn" onclick="downloadPDF()">
                   📄 Download as PDF
@@ -504,14 +481,10 @@ export default function SharedDocsContent() {
                 .map(
                   (imageItem, index) => `
                 <div class="image-container">
-                  <img src="${imageItem.url}" alt="Image ${
-                    index + 1
-                  }" onclick="openModal('${imageItem.url}')" />
-                  <div class="image-number">Image ${index + 1} of ${
-                    validImages.length
-                  }</div>
+                  <img src="${imageItem.url}" alt="Image ${index + 1}" onclick="openModal('${imageItem.url}')" />
+                  <div class="image-number">Image ${index + 1} of ${validImages.length}</div>
                 </div>
-              `
+              `,
                 )
                 .join("")}
             </div>
@@ -609,9 +582,7 @@ export default function SharedDocsContent() {
                       
                       // Add image number
                       pdf.setFontSize(10);
-                      pdf.text(\`Image \${i + 1} of ${
-                        validImages.length
-                      }\`, 20, pdf.internal.pageSize.getHeight() - 20);
+                      pdf.text(\`Image \${i + 1} of ${validImages.length}\`, 20, pdf.internal.pageSize.getHeight() - 20);
                       
                     } catch (error) {
                       console.error('Error adding image to PDF:', error);
@@ -642,127 +613,97 @@ export default function SharedDocsContent() {
             </script>
           </body>
         </html>
-      `);
+      `)
 
         // Clean up blob URLs after a delay
         setTimeout(() => {
-          validImages.forEach((item) => URL.revokeObjectURL(item.url));
-        }, 60000); // Increased timeout for PDF generation
+          validImages.forEach((item) => URL.revokeObjectURL(item.url))
+        }, 60000) // Increased timeout for PDF generation
       }
     } catch (error) {
-      console.error("Error viewing images:", error);
-      alert("Error loading images. Please try again.");
+      console.error("Error viewing images:", error)
+      alert("Error loading images. Please try again.")
     }
-  };
+  }
 
-  const filterPrescriptions = (
-    prescriptions: Prescription[]
-  ): Prescription[] => {
+  const filterPrescriptions = (prescriptions: Prescription[]): Prescription[] => {
     return prescriptions
       .filter((prescription) => {
         // Filter by title
-        if (
-          filters.title &&
-          !prescription.title
-            ?.toLowerCase()
-            .includes(filters.title.toLowerCase())
-        ) {
-          return false;
+        if (filters.title && !prescription.title?.toLowerCase().includes(filters.title.toLowerCase())) {
+          return false
         }
 
         // Filter by department
-        if (
-          filters.department &&
-          !prescription.department
-            .toLowerCase()
-            .includes(filters.department.toLowerCase())
-        ) {
-          return false;
+        if (filters.department && !prescription.department.toLowerCase().includes(filters.department.toLowerCase())) {
+          return false
         }
 
         // Filter by doctor name
-        if (
-          filters.doctorName &&
-          !prescription.doctor_name
-            .toLowerCase()
-            .includes(filters.doctorName.toLowerCase())
-        ) {
-          return false;
+        if (filters.doctorName && !prescription.doctor_name.toLowerCase().includes(filters.doctorName.toLowerCase())) {
+          return false
         }
 
         // Filter by date range
         if (filters.dateFrom || filters.dateTo) {
-          const visitedDate = new Date(prescription.visited_date);
+          const visitedDate = new Date(prescription.visited_date)
           if (filters.dateFrom && visitedDate < new Date(filters.dateFrom)) {
-            return false;
+            return false
           }
           if (filters.dateTo && visitedDate > new Date(filters.dateTo)) {
-            return false;
+            return false
           }
         }
 
         // Filter by test name (check reports)
         if (filters.testName) {
           const hasMatchingReport = prescription.reports.some((report) =>
-            report.test_name
-              .toLowerCase()
-              .includes(filters.testName.toLowerCase())
-          );
+            report.test_name.toLowerCase().includes(filters.testName.toLowerCase()),
+          )
           if (!hasMatchingReport && prescription.reports.length > 0) {
-            return false;
+            return false
           }
         }
 
-        return true;
+        return true
       })
       .map((prescription) => ({
         ...prescription,
         reports: prescription.reports.filter((report) => {
-          if (
-            filters.testName &&
-            !report.test_name
-              .toLowerCase()
-              .includes(filters.testName.toLowerCase())
-          ) {
-            return false;
+          if (filters.testName && !report.test_name.toLowerCase().includes(filters.testName.toLowerCase())) {
+            return false
           }
-          return true;
+          return true
         }),
-      }));
-  };
+      }))
+  }
 
   const filterStandaloneReports = (reports: Report[]): Report[] => {
     return reports.filter((report) => {
       // Filter by title
-      if (
-        filters.title &&
-        !report.title?.toLowerCase().includes(filters.title.toLowerCase())
-      ) {
-        return false;
+      if (filters.title && !report.title?.toLowerCase().includes(filters.title.toLowerCase())) {
+        return false
       }
 
       // Filter by test name
-      if (
-        filters.testName &&
-        !report.test_name.toLowerCase().includes(filters.testName.toLowerCase())
-      ) {
-        return false;
+      if (filters.testName && !report.test_name.toLowerCase().includes(filters.testName.toLowerCase())) {
+        return false
       }
 
       // Filter by date range
       if (filters.dateFrom || filters.dateTo) {
-        const deliveryDate = new Date(report.delivery_date);
+        const deliveryDate = new Date(report.delivery_date)
         if (filters.dateFrom && deliveryDate < new Date(filters.dateFrom)) {
-          return false;
+          return false
         }
         if (filters.dateTo && deliveryDate > new Date(filters.dateTo)) {
-          return false;
+          return false
         }
       }
 
-      return true;
-    });
-  };
+      return true
+    })
+  }
 
   const AuthenticatedImage = ({
     src,
@@ -770,69 +711,63 @@ export default function SharedDocsContent() {
     className,
     accessToken,
   }: {
-    src: string;
-    alt: string;
-    className?: string;
-    accessToken: string;
+    src: string
+    alt: string
+    className?: string
+    accessToken: string
   }) => {
-    const [imageSrc, setImageSrc] = useState<string>("");
-    const [imageError, setImageError] = useState(false);
+    const [imageSrc, setImageSrc] = useState<string>("")
+    const [imageError, setImageError] = useState(false)
 
     useEffect(() => {
       const fetchImage = async () => {
         try {
           // Construct full URL for image if it's a relative path
-          const imageUrl = src.startsWith("/") ? `${API_BASE_URL}${src}` : src;
+          const imageUrl = src.startsWith("/") ? `${API_BASE_URL}${src}` : src
 
           const response = await fetch(imageUrl, {
             headers: {
               Authorization: accessToken,
             },
-          });
+          })
 
           if (response.ok) {
-            const blob = await response.blob();
-            const imageObjectUrl = URL.createObjectURL(blob);
-            setImageSrc(imageObjectUrl);
+            const blob = await response.blob()
+            const imageObjectUrl = URL.createObjectURL(blob)
+            setImageSrc(imageObjectUrl)
           } else {
-            setImageError(true);
+            setImageError(true)
           }
         } catch (error) {
-          setImageError(true);
+          setImageError(true)
         }
-      };
+      }
 
       if (src && accessToken) {
-        fetchImage();
+        fetchImage()
       }
 
       return () => {
         if (imageSrc) {
-          URL.revokeObjectURL(imageSrc);
+          URL.revokeObjectURL(imageSrc)
         }
-      };
-    }, [src, accessToken]);
+      }
+    }, [src, accessToken])
 
     if (imageError) {
       return (
-        <div
-          className={`bg-background-grey flex items-center justify-center ${className}`}
-        >
+        <div className={`bg-background-grey flex items-center justify-center ${className}`}>
           <ImageIcon className="h-8 w-8 text-text-grey" />
         </div>
-      );
+      )
     }
 
     return imageSrc ? (
-      <img
-        src={imageSrc || "/placeholder.svg"}
-        alt={alt}
-        className={className}
-      />
+      <img src={imageSrc || "/placeholder.svg"} alt={alt} className={className} />
     ) : (
       <div className={`bg-background-grey animate-pulse ${className}`} />
-    );
-  };
+    )
+  }
 
   // Token validation
   if (!token) {
@@ -843,16 +778,12 @@ export default function SharedDocsContent() {
             <CardTitle className="text-red-600">Missing Token</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-text-grey mb-4">
-              No access token found in URL. Please use a valid shared link.
-            </p>
-            <p className="text-sm text-text-grey">
-              Expected URL format: /sharedpage?token=your_token_here
-            </p>
+            <p className="text-text-grey mb-4">No access token found in URL. Please use a valid shared link.</p>
+            <p className="text-sm text-text-grey">Expected URL format: /sharedpage?token=your_token_here</p>
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (loading) {
@@ -862,12 +793,10 @@ export default function SharedDocsContent() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-900">Loading shared documents...</p>
           <p className="text-sm text-text-grey mt-2">API: {API_BASE_URL}</p>
-          <p className="text-sm text-text-grey">
-            Token: {token.substring(0, 10)}...
-          </p>
+          <p className="text-sm text-text-grey">Token: {token.substring(0, 10)}...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -895,8 +824,7 @@ export default function SharedDocsContent() {
                       <strong>URL:</strong> {debugInfo.url}
                     </p>
                     <p>
-                      <strong>Status:</strong> {debugInfo.status}{" "}
-                      {debugInfo.statusText}
+                      <strong>Status:</strong> {debugInfo.status} {debugInfo.statusText}
                     </p>
                     <p>
                       <strong>Token:</strong> {token.substring(0, 15)}...
@@ -906,38 +834,29 @@ export default function SharedDocsContent() {
               )}
 
               <div className="bg-primary-more-light p-4 rounded-lg border border-primary-light">
-                <p className="text-primary font-medium mb-2">
-                  Troubleshooting Steps:
-                </p>
+                <p className="text-primary font-medium mb-2">Troubleshooting Steps:</p>
                 <ul className="text-sm text-primary space-y-1 list-disc list-inside">
                   <li>Make sure your backend server is running on port 5000</li>
                   <li>
-                    Verify the <code>/getSharedDocs</code> route exists in your
-                    Express app
+                    Verify the <code>/getSharedDocs</code> route exists in your Express app
                   </li>
                   <li>
-                    Check if the route is defined as{" "}
-                    <code>app.get('/getSharedDocs', ...)</code>
+                    Check if the route is defined as <code>app.get('/getSharedDocs', ...)</code>
                   </li>
-                  <li>
-                    Ensure CORS is properly configured for your frontend domain
-                  </li>
+                  <li>Ensure CORS is properly configured for your frontend domain</li>
                 </ul>
               </div>
 
               <div className="flex gap-2">
-                <Button
-                  onClick={fetchSharedDocs}
-                  className="flex-1 bg-primary hover:bg-primary-light"
-                >
+                <Button onClick={fetchSharedDocs} className="flex-1 bg-primary hover:bg-primary-light">
                   Try Again
                 </Button>
                 <Button
                   variant="outline"
                   className="flex-1 border-primary text-primary hover:bg-primary-more-light bg-transparent"
                   onClick={() => {
-                    const testUrl = `${API_BASE_URL}/getSharedDocs?token=${token}`;
-                    window.open(testUrl, "_blank");
+                    const testUrl = `${API_BASE_URL}/getSharedDocs?token=${token}`
+                    window.open(testUrl, "_blank")
                   }}
                 >
                   Test API in Browser
@@ -947,7 +866,7 @@ export default function SharedDocsContent() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (!data) {
@@ -955,13 +874,11 @@ export default function SharedDocsContent() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-text-grey">No data available</p>
       </div>
-    );
+    )
   }
 
-  const filteredPrescriptions = filterPrescriptions(data.prescriptions);
-  const filteredStandaloneReports = filterStandaloneReports(
-    data.standaloneReports
-  );
+  const filteredPrescriptions = filterPrescriptions(data.prescriptions)
+  const filteredStandaloneReports = filterStandaloneReports(data.standaloneReports)
 
   return (
     <div className="min-h-screen bg-background">
@@ -975,9 +892,9 @@ export default function SharedDocsContent() {
                 alt="Med History Logo"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.error("Logo failed to load:", e);
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.nextElementSibling.style.display = "flex";
+                  console.error("Logo failed to load:", e)
+                  e.currentTarget.style.display = "none"
+                  e.currentTarget.nextElementSibling.style.display = "flex"
                 }}
                 onLoad={() => console.log("Logo loaded successfully")}
               />
@@ -990,9 +907,7 @@ export default function SharedDocsContent() {
             </div>
             <div>
               <h1 className="text-4xl font-bold text-gray-900">Med History</h1>
-              <p className="text-text-grey text-lg">
-                Your shared medical documents
-              </p>
+              <p className="text-text-grey text-lg">Your shared medical documents</p>
             </div>
           </div>
         </div>
@@ -1026,9 +941,7 @@ export default function SharedDocsContent() {
                     id="title"
                     placeholder="Filter by title..."
                     value={filters.title}
-                    onChange={(e) =>
-                      setFilters((prev) => ({ ...prev, title: e.target.value }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, title: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1040,12 +953,7 @@ export default function SharedDocsContent() {
                     id="department"
                     placeholder="Filter by department..."
                     value={filters.department}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        department: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, department: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1057,12 +965,7 @@ export default function SharedDocsContent() {
                     id="doctorName"
                     placeholder="Filter by doctor name..."
                     value={filters.doctorName}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        doctorName: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, doctorName: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1074,12 +977,7 @@ export default function SharedDocsContent() {
                     id="testName"
                     placeholder="Filter by test name..."
                     value={filters.testName}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        testName: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, testName: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1091,12 +989,7 @@ export default function SharedDocsContent() {
                     id="dateFrom"
                     type="date"
                     value={filters.dateFrom}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        dateFrom: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1108,12 +1001,7 @@ export default function SharedDocsContent() {
                     id="dateTo"
                     type="date"
                     value={filters.dateTo}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        dateTo: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
                     className="border-primary-light focus:border-primary"
                   />
                 </div>
@@ -1133,8 +1021,7 @@ export default function SharedDocsContent() {
         {/* Results Summary */}
         <div className="mb-6">
           <p className="text-text-grey">
-            Found {filteredPrescriptions.length} prescriptions and{" "}
-            {filteredStandaloneReports.length} standalone reports
+            Found {filteredPrescriptions.length} prescriptions and {filteredStandaloneReports.length} standalone reports
           </p>
         </div>
 
@@ -1147,16 +1034,12 @@ export default function SharedDocsContent() {
             </h2>
             <div className="grid gap-6">
               {filteredPrescriptions.map((prescription) => (
-                <Card
-                  key={prescription.id}
-                  className="overflow-hidden border-primary-light"
-                >
+                <Card key={prescription.id} className="overflow-hidden border-primary-light">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-xl text-gray-900">
-                          {prescription.title ||
-                            `Prescription #${prescription.id}`}
+                          {prescription.title || `Prescription #${prescription.id}`}
                         </CardTitle>
                         <CardDescription className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
@@ -1169,20 +1052,11 @@ export default function SharedDocsContent() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-primary" />
-                            <span>
-                              Visited:{" "}
-                              {format(
-                                new Date(prescription.visited_date),
-                                "PPP"
-                              )}
-                            </span>
+                            <span>Visited: {format(new Date(prescription.visited_date), "PPP")}</span>
                           </div>
                         </CardDescription>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-primary text-white"
-                      >
+                      <Badge variant="secondary" className="bg-primary text-white">
                         ID: {prescription.id}
                       </Badge>
                     </div>
@@ -1203,10 +1077,7 @@ export default function SharedDocsContent() {
                               viewAllImages(
                                 prescription.images,
                                 data.accessToken,
-                                `${
-                                  prescription.title ||
-                                  `Prescription #${prescription.id}`
-                                } - All Images`
+                                `${prescription.title || `Prescription #${prescription.id}`} - All Images`,
                               )
                             }
                             className="border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
@@ -1217,10 +1088,7 @@ export default function SharedDocsContent() {
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                           {prescription.images.map((image) => (
-                            <div
-                              key={image.prescription_img_id}
-                              className="space-y-2"
-                            >
+                            <div key={image.prescription_img_id} className="space-y-2">
                               <AuthenticatedImage
                                 src={image.thumb}
                                 alt={`Prescription ${prescription.id} image`}
@@ -1231,9 +1099,7 @@ export default function SharedDocsContent() {
                                 variant="outline"
                                 size="sm"
                                 className="w-full text-xs border-primary text-primary hover:bg-primary-more-light bg-transparent"
-                                onClick={() =>
-                                  viewFullImage(image.resiged, data.accessToken)
-                                }
+                                onClick={() => viewFullImage(image.resiged, data.accessToken)}
                               >
                                 <ExternalLink className="h-3 w-3 mr-1" />
                                 View Full Size
@@ -1254,10 +1120,7 @@ export default function SharedDocsContent() {
                         </h4>
                         <div className="space-y-4">
                           {prescription.reports.map((report) => (
-                            <Card
-                              key={report.id}
-                              className="bg-primary-more-light border-primary-light"
-                            >
+                            <Card key={report.id} className="bg-primary-more-light border-primary-light">
                               <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start">
                                   <div>
@@ -1271,13 +1134,7 @@ export default function SharedDocsContent() {
                                       </div>
                                       <div className="flex items-center gap-2">
                                         <Calendar className="h-3 w-3 text-secondary" />
-                                        <span>
-                                          Delivery:{" "}
-                                          {format(
-                                            new Date(report.delivery_date),
-                                            "PPP"
-                                          )}
-                                        </span>
+                                        <span>Delivery: {format(new Date(report.delivery_date), "PPP")}</span>
                                       </div>
                                     </CardDescription>
                                   </div>
@@ -1290,10 +1147,7 @@ export default function SharedDocsContent() {
                                           viewAllImages(
                                             report.images,
                                             data.accessToken,
-                                            `${
-                                              report.title ||
-                                              `Report #${report.id}`
-                                            } - ${report.test_name}`
+                                            `${report.title || `Report #${report.id}`} - ${report.test_name}`,
                                           )
                                         }
                                         className="border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
@@ -1302,10 +1156,7 @@ export default function SharedDocsContent() {
                                         View All ({report.images.length})
                                       </Button>
                                     )}
-                                    <Badge
-                                      variant="outline"
-                                      className="border-primary text-primary"
-                                    >
+                                    <Badge variant="outline" className="border-primary text-primary">
                                       Report #{report.id}
                                     </Badge>
                                   </div>
@@ -1315,10 +1166,7 @@ export default function SharedDocsContent() {
                                 <CardContent className="pt-0">
                                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                     {report.images.map((image) => (
-                                      <div
-                                        key={image.report_img_id}
-                                        className="space-y-2"
-                                      >
+                                      <div key={image.report_img_id} className="space-y-2">
                                         <AuthenticatedImage
                                           src={image.thumb}
                                           alt={`Report ${report.id} image`}
@@ -1329,12 +1177,7 @@ export default function SharedDocsContent() {
                                           variant="outline"
                                           size="sm"
                                           className="w-full text-xs border-primary text-primary hover:bg-primary-more-light bg-transparent"
-                                          onClick={() =>
-                                            viewFullImage(
-                                              image.resiged,
-                                              data.accessToken
-                                            )
-                                          }
+                                          onClick={() => viewFullImage(image.resiged, data.accessToken)}
                                         >
                                           <ExternalLink className="h-3 w-3 mr-1" />
                                           View Full
@@ -1379,10 +1222,7 @@ export default function SharedDocsContent() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-secondary" />
-                            <span>
-                              Delivery:{" "}
-                              {format(new Date(report.delivery_date), "PPP")}
-                            </span>
+                            <span>Delivery: {format(new Date(report.delivery_date), "PPP")}</span>
                           </div>
                         </CardDescription>
                       </div>
@@ -1395,9 +1235,7 @@ export default function SharedDocsContent() {
                               viewAllImages(
                                 report.images,
                                 data.accessToken,
-                                `${report.title || `Report #${report.id}`} - ${
-                                  report.test_name
-                                }`
+                                `${report.title || `Report #${report.id}`} - ${report.test_name}`,
                               )
                             }
                             className="border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
@@ -1406,10 +1244,7 @@ export default function SharedDocsContent() {
                             View All ({report.images.length})
                           </Button>
                         )}
-                        <Badge
-                          variant="secondary"
-                          className="bg-secondary text-white"
-                        >
+                        <Badge variant="secondary" className="bg-secondary text-white">
                           Report #{report.id}
                         </Badge>
                       </div>
@@ -1430,9 +1265,7 @@ export default function SharedDocsContent() {
                               variant="outline"
                               size="sm"
                               className="w-full text-xs border-primary text-primary hover:bg-primary-more-light bg-transparent"
-                              onClick={() =>
-                                viewFullImage(image.resiged, data.accessToken)
-                              }
+                              onClick={() => viewFullImage(image.resiged, data.accessToken)}
                             >
                               <ExternalLink className="h-3 w-3 mr-1" />
                               View Full Size
@@ -1449,28 +1282,23 @@ export default function SharedDocsContent() {
         )}
 
         {/* No Results */}
-        {filteredPrescriptions.length === 0 &&
-          filteredStandaloneReports.length === 0 && (
-            <Card className="border-primary-light">
-              <CardContent className="text-center py-12">
-                <FileText className="h-12 w-12 text-text-grey mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No documents found
-                </h3>
-                <p className="text-text-grey mb-4">
-                  No documents match your current filter criteria.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="border-primary text-primary hover:bg-primary-more-light bg-transparent"
-                >
-                  Clear Filters
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+        {filteredPrescriptions.length === 0 && filteredStandaloneReports.length === 0 && (
+          <Card className="border-primary-light">
+            <CardContent className="text-center py-12">
+              <FileText className="h-12 w-12 text-text-grey mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No documents found</h3>
+              <p className="text-text-grey mb-4">No documents match your current filter criteria.</p>
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="border-primary text-primary hover:bg-primary-more-light bg-transparent"
+              >
+                Clear Filters
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
-  );
+  )
 }
