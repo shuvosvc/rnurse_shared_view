@@ -2,13 +2,14 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Shared Medical Documents",
-  description: "View and manage your shared medical prescriptions and reports",
-    generator: 'v0.dev'
+  title: "Med History - Medical Records Dashboard",
+  description: "Comprehensive medical history and records management system",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -18,7 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+      </body>
     </html>
   )
 }
